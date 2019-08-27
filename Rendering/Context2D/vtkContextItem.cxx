@@ -17,6 +17,7 @@
 
 //-----------------------------------------------------------------------------
 vtkContextItem::vtkContextItem()
+  : Transform(nullptr)
 {
   this->Opacity = 1.0;
 }
@@ -28,4 +29,9 @@ vtkContextItem::~vtkContextItem() = default;
 void vtkContextItem::PrintSelf(ostream &os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os, indent);
+}
+
+void vtkContextItem::SetTransform(vtkContextTransform *transform)
+{
+  this->Transform = transform;
 }

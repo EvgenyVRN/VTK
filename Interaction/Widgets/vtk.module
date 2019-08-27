@@ -12,6 +12,7 @@ DEPENDS
   VTK::FiltersGeneral
   VTK::FiltersSources
   VTK::RenderingCore
+  VTK::RenderingContext2D
 PRIVATE_DEPENDS
   VTK::CommonComputationalGeometry
   VTK::CommonDataModel
