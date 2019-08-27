@@ -28,6 +28,8 @@
 #include "vtkRenderingContext2DModule.h" // For export macro
 #include "vtkAbstractContextItem.h"
 
+class vtkContextTransform;
+
 class VTKRENDERINGCONTEXT2D_EXPORT vtkContextItem : public vtkAbstractContextItem
 {
 public:
@@ -49,11 +51,14 @@ public:
   vtkSetMacro(Opacity, double);
   //@}
 
+  void SetTransform(vtkContextTransform* transform);
+
 protected:
   vtkContextItem();
   ~vtkContextItem() override;
 
   double Opacity;
+  vtkContextTransform* Transform;
 
 private:
   vtkContextItem(const vtkContextItem &) = delete;

@@ -49,6 +49,7 @@ set(classes
   vtkDistanceRepresentation3D
   vtkDistanceWidget
   vtkEllipsoidTensorProbeRepresentation
+  vtkEqualizerContextItem
   vtkEvent
   vtkFinitePlaneRepresentation
   vtkFinitePlaneWidget
@@ -71,6 +72,7 @@ set(classes
   vtkLightRepresentation
   vtkLightWidget
   vtkLinearContourLineInterpolator
+  vtkLineContextItem
   vtkLineRepresentation
   vtkLineWidget
   vtkLineWidget2

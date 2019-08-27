@@ -36,7 +36,9 @@ set(classes
   vtkDiscreteFlyingEdgesClipper2D
   vtkDiscreteMarchingCubes
   vtkDistancePolyDataFilter
+  vtkDistanceTableFilter
   vtkEdgePoints
+  vtkEqualizerFilter
   vtkExtractArray
   vtkExtractSelectedFrustum
   vtkExtractSelectionBase
@@ -116,5 +118,13 @@ set(classes
   vtkWarpVector
   vtkYoungsMaterialInterface)
 
+set(sources
+    FFT.cxx)
+
+set(headers
+    FFT.h)
+
 vtk_module_add_module(VTK::FiltersGeneral
-  CLASSES ${classes})
+  CLASSES ${classes}
+  SOURCES ${sources}
+  HEADERS ${headers})
