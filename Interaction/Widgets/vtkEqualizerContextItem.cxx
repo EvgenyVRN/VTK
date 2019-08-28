@@ -15,8 +15,6 @@
 #include <sstream>
 #include <vector>
 
-#include <boost/algorithm/string.hpp>
-
 namespace equalizer
 {
 struct EqualizerPoint
@@ -85,6 +83,17 @@ class vtkEqualizerContextItem::vtkInternal
 public:
   typedef std::vector<equalizer::EqualizerPoint> EqualizerPoints;
 
+  static std::vector<std::string> splitStringByDelimiter(const std::string& source, char delim)
+  {
+    std::stringstream ss(source);
+    std::string item;
+    std::vector<std::string> result;
+    while (std::getline(ss, item, delim))
+      result.push_back(std::move(item));
+
+    return result;
+  }
+
   void addPoint(const equalizer::EqualizerPoint& point)
   {
     this->Points.insert((std::lower_bound(this->Points.begin(), this->Points.end(), point)), point);
@@ -106,22 +115,17 @@ public:
   {
     this->Points.clear();
     // TODO: refactoring, move parsing string to function
-    std::vector<std::string> vecPointsStr;
-    boost::split(vecPointsStr, str, boost::is_any_of(";"));
+    std::vector<std::string> vecPointsStr{ splitStringByDelimiter(str, ';') };
 
-    std::vector<std::string> pointStr;
     std::vector<vtkVector2f> points;
     for (auto point : vecPointsStr)
     {
-      boost::split(pointStr, point, boost::is_any_of(","));
-      try
+      std::vector<std::string> pointStr{ splitStringByDelimiter(point, ',') };
+      if (pointStr.size() > 1)
       {
         float x = std::stof(pointStr.at(0));
         float y = std::stof(pointStr.at(1));
         points.push_back(vtkVector2f(x, y));
-      }
-      catch (...)
-      {
       }
     }
 
@@ -263,7 +267,7 @@ bool vtkEqualizerContextItem::Paint(vtkContext2D* painter)
   //  auto width = scene->GetViewWidth();
 
   painter->ApplyPen(this->Pen);
-  painter->GetBrush()->SetColor(0,0,0);
+  painter->GetBrush()->SetColor(0, 0, 0);
 
   auto itPrev = this->Internal->Points.cbegin();
   auto itCur = itPrev;
