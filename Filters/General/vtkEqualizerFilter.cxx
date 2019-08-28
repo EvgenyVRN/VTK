@@ -19,8 +19,6 @@ using namespace vtksys;
 #include <string>
 #include <vector>
 
-#include <boost/algorithm/string.hpp>
-
 class vtkEqualizerFilter::vtkInternal
 {
 public:
@@ -136,6 +134,17 @@ public:
       (le2.GetX() - le1.GetX());
   }
 
+  static std::vector<std::string> splitStringByDelimiter(const std::string& source, char delim)
+  {
+    std::stringstream ss(source);
+    std::string item;
+    std::vector<std::string> result;
+    while (std::getline(ss, item, delim))
+      result.push_back(std::move(item));
+
+    return result;
+  }
+
   // attributes
   std::vector<vtkVector2f> Points;
   vtkIdType OriginalSize = 0;
@@ -197,22 +206,17 @@ const std::string& vtkEqualizerFilter::GetArray() const
 void vtkEqualizerFilter::SetPoints(const std::string& pointsStr)
 {
   // TODO: refactoring: replace to common function
-  std::vector<std::string> vecPointsStr;
-  boost::split(vecPointsStr, pointsStr, boost::is_any_of(";"));
-
-  std::vector<std::string> pointStr;
   this->Internal->ClearPoints();
+  std::vector<std::string> vecPointsStr { vtkInternal::splitStringByDelimiter(pointsStr, ';') };
+
   for (auto point : vecPointsStr)
   {
-    boost::split(pointStr, point, boost::is_any_of(","));
-    try
+    std::vector<std::string> pointStr { vtkInternal::splitStringByDelimiter(point, ',') } ;
+    if(pointStr.size()>1)
     {
       float x = std::stof(pointStr.at(0));
       float y = std::stof(pointStr.at(1));
       this->Internal->Points.push_back(vtkVector2f(x, y));
-    }
-    catch (...)
-    {
     }
   }
 
