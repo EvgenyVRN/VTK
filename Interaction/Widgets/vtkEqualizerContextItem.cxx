@@ -19,29 +19,27 @@ namespace equalizer
 {
 struct EqualizerPoint
 {
-  static constexpr uint radius = 5;
-  int freq;
-  double coef;
+  static const int radius{ 5 };
+  int freq{ -1 };
+  double coef{ 0 };
   EqualizerPoint(int f, double c)
   {
     freq = f;
     coef = c;
   }
-  EqualizerPoint()
-    : freq(-1)
-    , coef(0)
-  {
-  }
+
   EqualizerPoint(const vtkVector2f& vec)
     : freq(vec.GetX())
     , coef(vec.GetY())
   {
   }
   operator vtkVector2f() const { return vtkVector2f(freq, coef); }
-  void operator=(const vtkVector2f& pos)
+  EqualizerPoint& operator=(const vtkVector2f& pos)
   {
     this->freq = pos.GetX();
     this->coef = pos.GetY();
+
+    return *this;
   }
 
   bool operator<(const EqualizerPoint& point) { return this->freq < point.freq; }
@@ -74,6 +72,34 @@ bool isNearLine(vtkVector2f p, vtkVector2f le1, vtkVector2f le2, double radius)
   double val = lineYValue(p.GetX(), le1, le2);
   return abs(int(val - p.GetY())) < radius;
 }
+
+// TODO: replace to std::lower_bound
+// analog std::lower_bound
+// use it because
+// in gcc available std::lower_bound only with 3 parameters
+// in vc available std::lower_bound only with 4 parameters
+template<class ForwardIt, class T>
+ForwardIt lowerBound3(ForwardIt first, ForwardIt last, const T& value)
+{
+  ForwardIt it;
+  typename std::iterator_traits<ForwardIt>::difference_type count, step;
+  count = std::distance(first, last);
+
+  while (count > 0)
+  {
+    it = first;
+    step = count / 2;
+    std::advance(it, step);
+    if (*it < value)
+    {
+      first = ++it;
+      count -= step + 1;
+    }
+    else
+      count = step;
+  }
+  return first;
+}
 }
 
 // using namespace equalizer;
@@ -81,7 +107,7 @@ bool isNearLine(vtkVector2f p, vtkVector2f le1, vtkVector2f le2, double radius)
 class vtkEqualizerContextItem::vtkInternal
 {
 public:
-  typedef std::vector<equalizer::EqualizerPoint> EqualizerPoints;
+  using EqualizerPoints = std::vector<equalizer::EqualizerPoint>;
 
   static std::vector<std::string> splitStringByDelimiter(const std::string& source, char delim)
   {
@@ -96,7 +122,8 @@ public:
 
   void addPoint(const equalizer::EqualizerPoint& point)
   {
-    this->Points.insert((std::lower_bound(this->Points.begin(), this->Points.end(), point)), point);
+    this->Points.insert(
+      (equalizer::lowerBound3(this->Points.begin(), this->Points.end(), point)), point);
   }
 
   std::string pointsToString(vtkContextTransform* transform)
@@ -118,18 +145,18 @@ public:
     std::vector<std::string> vecPointsStr{ splitStringByDelimiter(str, ';') };
 
     std::vector<vtkVector2f> points;
-    for (auto point : vecPointsStr)
+    for (const auto& point : vecPointsStr)
     {
       std::vector<std::string> pointStr{ splitStringByDelimiter(point, ',') };
       if (pointStr.size() > 1)
       {
         float x = std::stof(pointStr.at(0));
         float y = std::stof(pointStr.at(1));
-        points.push_back(vtkVector2f(x, y));
+        points.emplace_back(x, y);
       }
     }
 
-    for (auto point : points)
+    for (const auto& point : points)
     {
       auto viewPoint = transform->MapToScene(point);
       this->Points.push_back(viewPoint);

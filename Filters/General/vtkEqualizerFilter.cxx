@@ -50,15 +50,14 @@ public:
 
       int spectrumSize = 0;
 
-      ComplexNumber* spectrum = 0x0;
+      ComplexNumber* spectrum = nullptr;
       fft_direct(&values[0], tuplesCount, &spectrumSize, spectrum);
       this->SpectrumSize = spectrumSize;
 
       this->Spectrums[array->GetName()] =
         std::vector<ComplexNumber>(spectrum, spectrum + spectrumSize);
 
-      if (spectrum != 0x0)
-        delete[] spectrum;
+      delete[] spectrum;
     }
 
     return this->Spectrums.at(array->GetName());
@@ -209,14 +208,14 @@ void vtkEqualizerFilter::SetPoints(const std::string& pointsStr)
   this->Internal->ClearPoints();
   std::vector<std::string> vecPointsStr { vtkInternal::splitStringByDelimiter(pointsStr, ';') };
 
-  for (auto point : vecPointsStr)
+  for (const auto& point : vecPointsStr)
   {
     std::vector<std::string> pointStr { vtkInternal::splitStringByDelimiter(point, ',') } ;
     if(pointStr.size()>1)
     {
       float x = std::stof(pointStr.at(0));
       float y = std::stof(pointStr.at(1));
-      this->Internal->Points.push_back(vtkVector2f(x, y));
+      this->Internal->Points.emplace_back(x, y);
     }
   }
 
@@ -389,13 +388,14 @@ void vtkEqualizerFilter::ProcessColumn(
 
   // fill result table
   int outCount;
-  ComplexNumber* num = 0x0;
+  ComplexNumber* num = nullptr;
   fft_inverse(modifiedSpectrum.data(), this->Internal->SpectrumSize, &outCount, num);
-  double outputData[this->Internal->OriginalSize];
+  double* outputData = new double[this->Internal->OriginalSize];
+
   if (num)
   {
     complexes_to_doubles(outputData, num, this->Internal->OriginalSize);
-    delete[] num;
+    delete [] num;
   }
 
   vtkSmartPointer<vtkDoubleArray> rfftArray = vtkSmartPointer<vtkDoubleArray>::New();
@@ -410,4 +410,5 @@ void vtkEqualizerFilter::ProcessColumn(
   }
   resultTable->AddColumn(rfftArray);
   // end fill result table
+  delete [] outputData;
 }
