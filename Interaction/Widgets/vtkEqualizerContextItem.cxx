@@ -7,6 +7,7 @@
 #include "vtkContextMouseEvent.h"
 #include "vtkContextScene.h"
 #include "vtkContextTransform.h"
+#include "vtkMath.h"
 #include "vtkObjectFactory.h"
 #include "vtkPen.h"
 #include "vtkVector.h"
@@ -233,6 +234,9 @@ public:
 
   bool RightButtonPressEvent(const vtkVector2f& pos)
   {
+    if (this->Points.size() < 3)
+      return false;
+
     for (auto it = this->Points.begin(); it != this->Points.end(); ++it)
     {
       const auto& point = *it;
@@ -241,6 +245,23 @@ public:
         this->Points.erase(it);
         return true;
       }
+    }
+
+    return false;
+  }
+
+  bool Hit(const vtkVector2f& pos) const
+  {
+    auto itPrev = this->Points.cbegin();
+    auto itCur = itPrev;
+
+    for (++itCur; itCur != this->Points.cend(); ++itCur)
+    {
+      const equalizer::EqualizerPoint& curPoint = *itCur;
+      const equalizer::EqualizerPoint& prevPoint = *itPrev;
+      if (equalizer::isNearLine(pos, prevPoint, curPoint, equalizer::EqualizerPoint::radius))
+        return true;
+      itPrev = itCur;
     }
 
     return false;
@@ -317,7 +338,8 @@ bool vtkEqualizerContextItem::Paint(vtkContext2D* painter)
 
 bool vtkEqualizerContextItem::Hit(const vtkContextMouseEvent& mouse)
 {
-  return this->Visible;
+  auto hit = this->Visible && this->Internal->Hit(mouse.GetPos());
+  return hit;
 }
 
 bool vtkEqualizerContextItem::MouseEnterEvent(const vtkContextMouseEvent& mouse)
@@ -338,13 +360,14 @@ bool vtkEqualizerContextItem::MouseMoveEvent(const vtkContextMouseEvent& mouse)
     {
       equalizer::EqualizerPoint& point = this->Internal->Points.at(this->Internal->TakenPoint);
       auto scope = this->Internal->GetScopes();
-      auto pos = mouse.GetPos().GetX();
-      if (pos < scope.first)
-        pos = scope.first;
-      if (pos > scope.second)
-        pos = scope.second;
+      auto posX = vtkMath::ClampValue<int>(mouse.GetPos().GetX(), scope.first, scope.second);
 
-      point = equalizer::EqualizerPoint(pos, mouse.GetPos().GetY());
+      auto posY = mouse.GetPos().GetY();
+      if (posY < 0)
+        posY = 0;
+
+      point.freq = posX;
+      point.coef = posY;
 
       this->InvokeEvent(vtkCommand::InteractionEvent);
       this->Modified();

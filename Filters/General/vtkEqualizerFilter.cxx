@@ -141,11 +141,8 @@ public:
       for (int j = pos1; j < pos2; j++)
       {
         float coeff = (p1.GetY() + delta * (j - pos1));
-        double modifier = pow(10, 0.05 * coeff);
-        result.emplace_back(j, modifier);
-
-//        result[j] *= modifier;
-//        result[this->SpectrumSize - j - 1] *= modifier;
+        // double modifier = pow(10, 0.05 * coeff);
+        result.emplace_back(j, coeff);
       }
     }
 
