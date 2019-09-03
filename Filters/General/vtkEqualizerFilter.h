@@ -39,7 +39,7 @@ protected:
   int RequestData(vtkInformation*, vtkInformationVector**, vtkInformationVector*) override;
 
 private:
-  void ProcessColumn(vtkDataArray* array, vtkTable* spectrumTable, vtkTable* resultTable);
+  void ProcessColumn(vtkDataArray* array, vtkTable* spectrumTable, vtkTable* resultTable, vtkTable *normalizedTable);
 
 private:
   vtkEqualizerFilter(const vtkEqualizerFilter&) = delete;
