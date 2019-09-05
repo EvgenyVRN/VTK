@@ -1,9 +1,8 @@
 #include "vtkEqualizerFilter.h"
 
-#include "FFT.h"
-
 #include "vtkDataArray.h"
 #include "vtkDoubleArray.h"
+#include "vtkFFT.h"
 #include "vtkInformation.h"
 #include "vtkInformationVector.h"
 #include "vtkIntArray.h"
@@ -52,7 +51,7 @@ public:
       int spectrumSize = 0;
 
       ComplexNumber* spectrum = nullptr;
-      fft_direct(&values[0], tuplesCount, &spectrumSize, spectrum);
+      vtkFFT::fft_direct(&values[0], tuplesCount, &spectrumSize, spectrum);
       this->SpectrumSize = spectrumSize;
 
       this->Spectrums[array->GetName()] =
@@ -74,7 +73,7 @@ public:
       std::vector<double> modules;
       for (vtkIdType spectrumId = 0; spectrumId < this->GetHalfSpectrumSize(); ++spectrumId)
       {
-        auto module = complex_module(spectrum[spectrumId]);
+        auto module = vtkFFT::complex_module(spectrum[spectrumId]);
         maxModule = (maxModule > module ? maxModule : module);
         modules.push_back(module);
       }
@@ -397,7 +396,7 @@ void vtkEqualizerFilter::ProcessColumn(
 
   // fill spectrum table
   std::vector<double> freqArray =
-    rfftfreq(this->Internal->SpectrumSize, 1.0 / this->SamplingFrequency);
+    vtkFFT::rfftfreq(this->Internal->SpectrumSize, 1.0 / this->SamplingFrequency);
   // assert(freqArray.size() == this->Internal->GetHalfSpectrumSize());
 
   vtkSmartPointer<vtkDoubleArray> freqColumn = vtkSmartPointer<vtkDoubleArray>::New();
@@ -426,7 +425,7 @@ void vtkEqualizerFilter::ProcessColumn(
     // нас интересует только спектр амплитуд, поэтому используем complex_module
     // делим на число элементов, чтобы амплитуды были в милливольтах, а не в суммах Фурье
     double modifier = pow(10, 0.05 * this->SpectrumGain);
-    double module = complex_module(value) * modifier / this->Internal->GetHalfSpectrumSize();
+    double module = vtkFFT::complex_module(value) * modifier / this->Internal->GetHalfSpectrumSize();
     leadArray->SetTuple1(spectrumId, module);
 
     normalizedArray->SetTuple1(spectrumId, normSpectrum[spectrumId]*modifier);
@@ -438,12 +437,12 @@ void vtkEqualizerFilter::ProcessColumn(
   // fill result table
   int outCount;
   ComplexNumber* num = nullptr;
-  fft_inverse(spectrum.data(), this->Internal->SpectrumSize, &outCount, num);
+  vtkFFT::fft_inverse(spectrum.data(), this->Internal->SpectrumSize, &outCount, num);
   double* outputData = new double[this->Internal->OriginalSize];
 
   if (num)
   {
-    complexes_to_doubles(outputData, num, this->Internal->OriginalSize);
+    vtkFFT::complexes_to_doubles(outputData, num, this->Internal->OriginalSize);
     delete [] num;
   }
 

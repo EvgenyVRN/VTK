@@ -104,6 +104,7 @@ set(classes
   vtkDoubleArray
   vtkDynamicLoader
   vtkEventForwarderCommand
+  vtkFFT
   vtkFileOutputWindow
   vtkFloatArray
   vtkFloatingPointExceptions

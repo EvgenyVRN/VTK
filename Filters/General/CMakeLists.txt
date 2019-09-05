@@ -118,13 +118,5 @@ set(classes
   vtkWarpVector
   vtkYoungsMaterialInterface)
 
-set(sources
-    FFT.cxx)
-
-set(headers
-    FFT.h)
-
 vtk_module_add_module(VTK::FiltersGeneral
-  CLASSES ${classes}
-  SOURCES ${sources}
-  HEADERS ${headers})
+  CLASSES ${classes})
