@@ -7,6 +7,7 @@
 #include "vtkContextMouseEvent.h"
 #include "vtkContextScene.h"
 #include "vtkContextTransform.h"
+#include "vtkLine.h"
 #include "vtkMath.h"
 #include "vtkObjectFactory.h"
 #include "vtkPen.h"
@@ -51,27 +52,23 @@ bool operator<(const EqualizerPoint& lhs, const EqualizerPoint& rhs)
   return lhs.freq < rhs.freq;
 }
 
-bool isNear(double x, double y, double radius)
+bool isNear(vtkVector2f pos1, vtkVector2f pos2, double radius)
 {
-  return (y <= x + radius) && (y >= x - radius);
+  auto dist = (pos2.GetX() - pos1.GetX()) * (pos2.GetX() - pos1.GetX()) +
+    (pos2.GetY() - pos1.GetY()) * (pos2.GetY() - pos1.GetY());
+  return dist < radius*radius;
 }
 
-bool isNear(vtkVector2f x, vtkVector2f y, double radius)
+bool isNearLine(vtkVector2f p, vtkVector2f le1, vtkVector2f le2, double radius, double closestPoint[3]=nullptr)
 {
-  return isNear(x.GetX(), y.GetX(), radius) && isNear(x.GetY(), y.GetY(), radius);
-}
+  double p1[3] = {le1.GetX(), le1.GetY(), 0.0};
+  double p2[3] = {le2.GetX(), le2.GetY(), 0.0};
+  double xyz[3] = {p.GetX(), p.GetY(), 0.0};
+  double t;
 
-double lineYValue(double x, vtkVector2f le1, vtkVector2f le2)
-{
-  return ((le2.GetY() - le1.GetY()) * x +
-           (-le1.GetX() * (le2.GetY() - le1.GetY()) + le1.GetY() * (le2.GetX() - le1.GetX()))) /
-    (le2.GetX() - le1.GetX());
-}
-
-bool isNearLine(vtkVector2f p, vtkVector2f le1, vtkVector2f le2, double radius)
-{
-  double val = lineYValue(p.GetX(), le1, le2);
-  return abs(int(val - p.GetY())) < radius;
+  auto onLine = (vtkLine::DistanceToLine(xyz,p1,p2,t,closestPoint) <= radius*radius);
+  bool res = { onLine && t < 1.0 && t > 0.0 };
+  return res;
 }
 
 // TODO: replace to std::lower_bound
@@ -166,17 +163,12 @@ public:
     if (this->TakenPoint == -1)
       return std::pair<int, int>(left, right);
 
-    // the first point
-    if (this->TakenPoint == 0)
+    // the first or last point
+    if ((this->TakenPoint == 0) || (this->TakenPoint == this->Points.size() - 1))
     {
-      const equalizer::EqualizerPoint& pointRight = this->Points.at(this->TakenPoint + 1);
-      right = pointRight.freq;
-    }
-    // the last point
-    else if (this->TakenPoint == this->Points.size() - 1)
-    {
-      const equalizer::EqualizerPoint& pointLeft = this->Points.at(this->TakenPoint - 1);
-      left = pointLeft.freq;
+      const equalizer::EqualizerPoint& point = this->Points.at(this->TakenPoint);
+      left = point.freq;
+      right = point.freq;
     }
     else
     {
@@ -213,10 +205,13 @@ public:
       {
         auto curPoint = transform->MapToScene(*itCur);
         auto prevPoint = transform->MapToScene(*itPrev);
-        if (equalizer::isNearLine(posScreen, prevPoint, curPoint, equalizer::EqualizerPoint::radius))
+        double closestPoint[3];
+        if (equalizer::isNearLine(
+              posScreen, prevPoint, curPoint, equalizer::EqualizerPoint::radius, closestPoint))
         {
-          vtkVector2f tmp(posScreen.GetX(), equalizer::lineYValue(posScreen.GetX(), prevPoint, curPoint));
-          this->addPoint(transform->MapFromScene(tmp));
+          vtkVector2f tmp(closestPoint[0], closestPoint[1]);
+          // this->addPoint(transform->MapFromScene(tmp));
+          this->Points.insert(itCur, transform->MapFromScene(tmp));
           break;
         }
         itPrev = itCur;
@@ -270,10 +265,12 @@ vtkEqualizerContextItem::vtkEqualizerContextItem()
   : vtkContextItem()
   , MouseState(vtkEqualizerContextItem::NO_BUTTON)
   , Pen(vtkPen::New())
+  , Brush(vtkBrush::New())
   , Internal(new vtkInternal())
 {
   this->Pen->SetColor(0, 0, 0);
   this->Pen->SetWidth(3.0);
+  this->Brush->SetColor(0, 0, 0);
   // TODO: add real begin and end points (maybe center)
   this->Internal->addPoint(equalizer::EqualizerPoint(0, 100));
   this->Internal->addPoint(equalizer::EqualizerPoint(1000, 100));
@@ -283,6 +280,7 @@ vtkEqualizerContextItem::vtkEqualizerContextItem()
 vtkEqualizerContextItem::~vtkEqualizerContextItem()
 {
   this->Pen->Delete();
+  this->Brush->Delete();
   delete this->Internal;
 }
 
@@ -304,13 +302,13 @@ bool vtkEqualizerContextItem::Paint(vtkContext2D* painter)
   if (!scene)
     return false;
 
-  if(!this->Transform)
+  if (!this->Transform)
     return false;
 
   //  auto width = scene->GetViewWidth();
 
   painter->ApplyPen(this->Pen);
-  painter->GetBrush()->SetColor(0, 0, 0);
+  painter->ApplyBrush(this->Brush);
 
   auto itPrev = this->Internal->Points.cbegin();
   auto itCur = itPrev;
@@ -333,7 +331,7 @@ bool vtkEqualizerContextItem::Paint(vtkContext2D* painter)
 
 bool vtkEqualizerContextItem::Hit(const vtkContextMouseEvent& mouse)
 {
-  if(!this->Transform)
+  if (!this->Transform)
     return false;
 
   auto hit = this->Internal->Hit(mouse.GetPos(), this->Transform);
@@ -354,7 +352,7 @@ bool vtkEqualizerContextItem::MouseMoveEvent(const vtkContextMouseEvent& mouse)
     if (!scene)
       return false;
 
-    if(!this->Transform)
+    if (!this->Transform)
       return false;
 
     if (this->Internal->TakenPoint != -1)
@@ -389,7 +387,8 @@ bool vtkEqualizerContextItem::MouseLeaveEvent(const vtkContextMouseEvent& mouse)
 bool vtkEqualizerContextItem::MouseButtonPressEvent(const vtkContextMouseEvent& mouse)
 {
   vtkDebugMacro(<< "MouseButtonPressEvent: pos = " << mouse.GetPos());
-  vtkDebugMacro(<< "MouseButtonPressEvent: pos from scene = " << this->Transform->MapFromScene(mouse.GetPos()));
+  vtkDebugMacro(<< "MouseButtonPressEvent: pos from scene = "
+                << this->Transform->MapFromScene(mouse.GetPos()));
 
   // if (mouse.GetModifiers() == vtkContextMouseEvent::SHIFT_MODIFIER)
   auto pos = mouse.GetPos();
@@ -425,15 +424,15 @@ bool vtkEqualizerContextItem::MouseWheelEvent(const vtkContextMouseEvent& mouse,
 
 bool vtkEqualizerContextItem::KeyPressEvent(const vtkContextKeyEvent& key)
 {
-  vtkDebugMacro(<< "vtkLineContextItem::KeyPressEvent: key = " << key.GetKeyCode());
+  vtkDebugMacro(<< "KeyPressEvent: key = " << key.GetKeyCode());
   return vtkAbstractContextItem::KeyPressEvent(key);
 }
 
 void vtkEqualizerContextItem::SetScene(vtkContextScene* scene)
 {
   vtkAbstractContextItem::SetScene(scene);
-//  if (this->Transform && scene)
-//    this->Internal->setPoints(this->PointsStr, this->Transform);
+  //  if (this->Transform && scene)
+  //    this->Internal->setPoints(this->PointsStr, this->Transform);
   this->Modified();
 }
 

@@ -7,6 +7,7 @@
 
 #include <string>
 
+class vtkBrush;
 class vtkPen;
 class vtkContextTransform;
 
@@ -81,6 +82,7 @@ protected:
 
   MouseStates MouseState;
   vtkPen* Pen;
+  vtkBrush* Brush;
 
   std::string PointsStr;
 
