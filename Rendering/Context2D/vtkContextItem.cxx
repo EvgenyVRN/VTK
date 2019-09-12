@@ -15,6 +15,8 @@
 
 #include "vtkContextItem.h"
 
+#include "vtkContextTransform.h"
+
 //-----------------------------------------------------------------------------
 vtkContextItem::vtkContextItem()
   : Transform(nullptr)
@@ -33,5 +35,5 @@ void vtkContextItem::PrintSelf(ostream &os, vtkIndent indent)
 
 void vtkContextItem::SetTransform(vtkContextTransform *transform)
 {
-  this->Transform = transform;
+  this->Transform = vtk::TakeWeakPointer(transform);
 }

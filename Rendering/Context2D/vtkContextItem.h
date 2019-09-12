@@ -27,6 +27,7 @@
 
 #include "vtkRenderingContext2DModule.h" // For export macro
 #include "vtkAbstractContextItem.h"
+#include "vtkWeakPointer.h"
 
 class vtkContextTransform;
 
@@ -58,7 +59,7 @@ protected:
   ~vtkContextItem() override;
 
   double Opacity;
-  vtkContextTransform* Transform;
+  vtkWeakPointer<vtkContextTransform> Transform;
 
 private:
   vtkContextItem(const vtkContextItem &) = delete;
