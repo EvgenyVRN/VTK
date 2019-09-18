@@ -154,6 +154,7 @@ vtk_add_test_cxx(vtkCommonCoreCxxTests tests
   TestWeakPointer.cxx
   TestXMLFileOutputWindow.cxx
   UnitTestInformationKeys.cxx
+  UnitTestFFT.cxx
   otherArrays.cxx
   otherByteSwap.cxx
   # These two need vtkLookupTableWithEnabling/vtkLogLookupTable - move
