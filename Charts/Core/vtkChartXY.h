@@ -33,6 +33,8 @@
 #include "vtkSmartPointer.h"     // For SP ivars
 #include "vtkVector.h"           // For vtkVector2f in struct
 
+#include <vector>
+
 class vtkPlot;
 class vtkAxis;
 class vtkPlotGrid;
