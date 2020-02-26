@@ -2,21 +2,21 @@ NAME
   VTK::FiltersParallelDIY2
 LIBRARY_NAME
   vtkFiltersParallelDIY2
-GROUPS
-  MPI
+KIT
+  VTK::Parallel
 IMPLEMENTS
   VTK::FiltersCore
   VTK::FiltersParallel
 DEPENDS
   VTK::FiltersCore
   VTK::FiltersParallel
+  VTK::ParallelDIY
 OPTIONAL_DEPENDS
   VTK::ParallelMPI
 PRIVATE_DEPENDS
   VTK::CommonCore
   VTK::CommonDataModel
   VTK::CommonExecutionModel
-  VTK::diy2
   VTK::ImagingCore
   VTK::IOXML
   VTK::ParallelCore
@@ -25,7 +25,9 @@ TEST_DEPENDS
   VTK::FiltersGeometry
   VTK::ImagingCore
   VTK::InteractionStyle
+  VTK::IOXML
   VTK::ParallelCore
+  VTK::IOExodus
   VTK::RenderingOpenGL2
   VTK::RenderingParallel
   VTK::TestingCore

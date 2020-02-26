@@ -7,6 +7,9 @@ set(VTK_PYTHON_VERSION 2 CACHE STRING
 set_property(CACHE VTK_PYTHON_VERSION
   PROPERTY
     STRINGS "2;3")
+include(CMakeDependentOption)
+cmake_dependent_option(VTK_WHEEL_BUILD "Generate a build for a Python wheel" OFF
+  "VTK_WRAP_PYTHON;VTK_PYTHON_VERSION EQUAL 3" OFF)
 
 # Force reset of hints file location in cache if it was moved
 if(VTK_WRAP_HINTS AND NOT EXISTS ${VTK_WRAP_HINTS})
@@ -16,8 +19,7 @@ endif()
 
 if(BUILD_TESTING OR VTK_WRAP_PYTHON)
   # Need PYTHON_EXECUTABLE for HeaderTesting or python wrapping
-  find_package(PythonInterp "${VTK_PYTHON_VERSION}" QUIET)
-  mark_as_advanced(PYTHON_EXECUTABLE)
+  find_package("Python${VTK_PYTHON_VERSION}" QUIET COMPONENTS Interpreter)
 endif()
 
 if(VTK_WRAP_PYTHON)

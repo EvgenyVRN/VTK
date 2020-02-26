@@ -8,10 +8,6 @@ foreach(policy
   endif()
 endforeach()
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Android" AND CMAKE_VERSION VERSION_LESS 3.7)
-  message(FATAL_ERROR "CMake 3.7 or above is required to build for Android")
-endif()
-
 if (POLICY CMP0063)
   cmake_policy(SET CMP0063 NEW)
 endif ()
@@ -65,13 +61,10 @@ include(vtkCMakeBackports)
 # Should be included after vtkTesting
 include(vtkCompilerDynamicAnalysisFlags)
 
-#-----------------------------------------------------------------------------
-# Do we want examples built?
-option(VTK_BUILD_EXAMPLES "Build VTK examples." OFF)
-
 set(VTK_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 #-----------------------------------------------------------------------------
 # Add the Remote Subdirectory
@@ -126,6 +119,10 @@ mark_as_advanced(VTK_ENABLE_LOGGING)
 
 include(vtkEncodeString)
 
+if (VTK_WHEEL_BUILD)
+  include(vtkWheelPreparation)
+endif ()
+
 # Set up our directory structure for output libraries and binaries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${VTK_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${VTK_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
@@ -153,10 +150,6 @@ endif ()
 # For vtkTkRenderWidget (only useful with Python, since WRAP_TCL is gone)
 if (VTK_USE_TK)
   set(VTK_GROUP_ENABLE_Tk YES)
-else ()
-  set(_vtk_module_group_default_Tk "DONT_WANT")
-  list(APPEND vtk_rejected_modules
-    VTK::RenderingTk)
 endif ()
 if (VTK_USE_MPI)
   set(VTK_GROUP_ENABLE_MPI YES)
@@ -290,14 +283,16 @@ if (VTK_VERSIONED_INSTALL)
 endif ()
 
 set(vtk_install_export VTK)
-set(vtk_cmake_destination
-  "${CMAKE_INSTALL_LIBDIR}/cmake/vtk${vtk_version_suffix}")
-set(vtk_target_package)
-if (VTK_BUILD_COMPILE_TOOLS_ONLY)
-  set(vtk_install_export VTKCompileTools)
+if (NOT DEFINED vtk_cmake_destination)
   set(vtk_cmake_destination
-    "${CMAKE_INSTALL_LIBDIR}/cmake/vtkcompiletools${vtk_version_suffix}")
-  set(vtk_target_package PACKAGE "${vtk_install_export}")
+    "${CMAKE_INSTALL_LIBDIR}/cmake/vtk${vtk_version_suffix}")
+  set(vtk_target_package)
+  if (VTK_BUILD_COMPILE_TOOLS_ONLY)
+    set(vtk_install_export VTKCompileTools)
+    set(vtk_cmake_destination
+      "${CMAKE_INSTALL_LIBDIR}/cmake/vtkcompiletools${vtk_version_suffix}")
+    set(vtk_target_package PACKAGE "${vtk_install_export}")
+  endif ()
 endif ()
 
 set(VTK_CUSTOM_LIBRARY_SUFFIX "<DEFAULT>"
@@ -317,6 +312,7 @@ vtk_module_build(
   INSTALL_EXPORT      "${vtk_install_export}"
   ${vtk_target_package}
   HEADERS_DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/vtk${vtk_version_suffix}"
+  ${vtk_hierarchy_destination_args}
   CMAKE_DESTINATION   "${vtk_cmake_destination}"
   LIBRARY_NAME_SUFFIX "${VTK_CUSTOM_LIBRARY_SUFFIX}"
   VERSION             "${VTK_VERSION}"
@@ -349,16 +345,28 @@ if (VTK_WRAP_PYTHON)
     "${vtk_required_python_modules}\n")
   vtk_module_wrap_python(
     MODULES         ${vtk_modules}
-    INSTALL_EXPORT  VTK
+    INSTALL_EXPORT  VTKPython
     PYTHON_PACKAGE  "vtkmodules"
     LIBRARY_DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     MODULE_DESTINATION  "${VTK_PYTHON_SITE_PACKAGES_SUFFIX}"
     CMAKE_DESTINATION   "${vtk_cmake_destination}"
     INSTALL_HEADERS     "${VTK_INSTALL_SDK}"
+    SOABI               "${vtk_soabi}"
     WRAPPED_MODULES vtk_python_wrapped_modules
     TARGET          VTK::vtkpythonmodules)
 
   add_subdirectory(Wrapping/Python)
+
+  export(
+    EXPORT    VTKPython
+    NAMESPACE VTK::
+    FILE      "${CMAKE_BINARY_DIR}/${vtk_cmake_destination}/VTKPython-targets.cmake")
+  install(
+    EXPORT      VTKPython
+    NAMESPACE   VTK::
+    FILE        VTKPython-targets.cmake
+    DESTINATION "${vtk_cmake_destination}"
+    COMPONENT   "development")
 endif ()
 
 if (VTK_WRAP_JAVA)
@@ -420,7 +428,26 @@ if(BUILD_TESTING AND VTK_WRAP_PYTHON)
   add_subdirectory(Utilities/vtkTclTest2Py)
 endif()
 
+if (NOT TARGET uninstall)
+  add_custom_target(uninstall
+    COMMAND
+      "${CMAKE_COMMAND}"
+        "-DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}"
+        -P "${CMAKE_CURRENT_LIST_DIR}/CMake/vtkUninstall.cmake"
+    USES_TERMINAL
+    COMMENT "Uninstalling VTK")
+endif ()
+
+install(
+  FILES       "${CMAKE_CURRENT_LIST_DIR}/Copyright.txt"
+  DESTINATION "${CMAKE_INSTALL_DOCDIR}"
+  COMPONENT   "license")
+
 # TODO: HeaderTest exclusions for memcheck.
+
+if (VTK_WHEEL_BUILD)
+  include(vtkWheelFinalization)
+endif ()
 
 #-----------------------------------------------------------------------------
 # Do this at the end so the all variables it uses are setup.

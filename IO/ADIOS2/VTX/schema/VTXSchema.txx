@@ -32,15 +32,18 @@
 namespace vtx
 {
 
-template<class T>
+template <class T>
 void VTXSchema::GetDataArrayCommon(
   adios2::Variable<T> variable, types::DataArray& dataArray, const size_t step)
 {
+  dataArray.IsUpdated = true;
+
   if (dataArray.Persist)
   {
     const auto blocksInfo = this->Engine.BlocksInfo(variable, step);
     if (blocksInfo.empty())
     {
+      dataArray.IsUpdated = false;
       return;
     }
   }
@@ -65,7 +68,7 @@ void VTXSchema::GetDataArrayCommon(
   }
 }
 
-template<class T>
+template <class T>
 void VTXSchema::GetDataArrayGlobal(
   adios2::Variable<T> variable, types::DataArray& dataArray, const size_t step)
 {
@@ -77,7 +80,7 @@ void VTXSchema::GetDataArrayGlobal(
   this->Engine.Get(variable, ptr);
 }
 
-template<class T>
+template <class T>
 void VTXSchema::GetDataArrayLocal(
   adios2::Variable<T> variable, types::DataArray& dataArray, const size_t step)
 {
@@ -93,6 +96,8 @@ void VTXSchema::GetDataArrayLocal(
   size_t components = 1;
   if (dataArray.HasTuples)
   {
+    // last one?
+    // TODO: check ordering here
     components = variable.Count().back();
   }
   else
@@ -117,7 +122,7 @@ void VTXSchema::GetDataArrayLocal(
   }
 }
 
-template<class T>
+template <class T>
 void VTXSchema::GetDataValueGlobal(
   adios2::Variable<T> variable, types::DataArray& dataArray, const size_t /*step*/)
 {
@@ -126,7 +131,7 @@ void VTXSchema::GetDataValueGlobal(
   this->Engine.Get(variable, ptr);
 }
 
-template<class T>
+template <class T>
 void VTXSchema::InitDataArray(const std::string& name, const size_t elements,
   const size_t components, types::DataArray& dataArray)
 {
@@ -145,7 +150,7 @@ void VTXSchema::InitDataArray(const std::string& name, const size_t elements,
   dataArray.Data->SetName(name.c_str());
 }
 
-template<class T>
+template <class T>
 void VTXSchema::GetTimesCommon(const std::string& variableName)
 {
   adios2::Variable<T> varTime = this->IO.InquireVariable<T>(variableName);

@@ -74,6 +74,7 @@ configure_file(
 set(classes
   vtkAbstractArray
   vtkAnimationCue
+  vtkArchiver
   vtkArray
   vtkArrayCoordinates
   vtkArrayExtents
@@ -208,7 +209,9 @@ set(template_classes
   vtkTypeList)
 
 set(sources
+  vtkArchiver.cxx
   vtkArrayIteratorTemplateInstantiate.cxx
+  vtkGenericDataArray.cxx
   vtkSOADataArrayTemplateInstantiate.cxx
   vtkScalarsToColors.cxx
   vtkShortArray.cxx
@@ -225,7 +228,6 @@ set(sources
   vtkTimeStamp.cxx
   vtkType.h
   vtkTypedArray.txx
-  vtkTypedDataArray.txx
   vtkUnicodeString.cxx
   vtkUnicodeStringArray.cxx
   vtkUnsignedCharArray.cxx
@@ -238,7 +240,6 @@ set(sources
   vtkVersion.cxx
   vtkVoidArray.cxx
   vtkWeakPointerBase.cxx
-  vtkWeakReference.cxx
   vtkWindow.cxx
   vtkXMLFileOutputWindow.cxx
   ${vtk_smp_sources}
@@ -258,10 +259,10 @@ configure_file(
 
 set(headers
   vtkABI.h
+  vtkArchiver.h
   vtkArrayIteratorIncludes.h
   vtkAssume.h
   vtkAtomicTypeConcepts.h
-  vtkAtomicTypes.h
   vtkAutoInit.h
   vtkBuffer.h
   vtkCollectionRange.h
@@ -279,9 +280,7 @@ set(headers
   vtkIOStream.h
   vtkIOStreamFwd.h
   vtkInformationInternals.h
-  vtkMappedDataArray.h
   vtkMathUtilities.h
-  vtkMersenneTwister.h
   vtkMeta.h
   vtkNew.h
   vtkSetGet.h
@@ -291,14 +290,12 @@ set(headers
   vtkTestDataArray.h
   vtkType.h
   vtkTypeTraits.h
-  vtkTypedDataArray.h
   vtkTypedDataArrayIterator.h
   vtkVariantCast.h
   vtkVariantCreate.h
   vtkVariantExtract.h
   vtkVariantInlineOperators.h
   vtkWeakPointer.h
-  vtkWeakReference.h
   vtkWin32Header.h
   vtkWindows.h
   vtkWrappingHints.h

@@ -9,6 +9,7 @@ if (TARGET VTK::ParallelMPI)
     TESTING_DATA
     DistributedData.cxx
     DistributedDataRenderPass.cxx
+    PTextureMapToSphere.cxx
     TestPExtractDataArraysOverTime.cxx,NO_VALID
     TransmitImageData.cxx
     TransmitImageDataRenderPass.cxx
@@ -17,6 +18,7 @@ if (TARGET VTK::ParallelMPI)
     )
   vtk_add_test_mpi(vtkFiltersParallelCxxTests-MPI no_data_tests
     ParallelResampling.cxx
+    PCellDataToPointData.cxx
     UnitTestPMaskPoints.cxx
     )
 
@@ -26,6 +28,7 @@ if (TARGET VTK::ParallelMPI)
   vtk_add_test_mpi(vtkFiltersParallelCxxTests-MPI no_data_tests_4_procs
     AggregateDataSet.cxx
     )
+
 
   set(all_tests
     ${tests}

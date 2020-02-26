@@ -45,8 +45,8 @@ public:
    * Standard methods for construction, type info, and printing.
    */
   vtkTypeMacro(vtkExtractCells, vtkUnstructuredGridAlgorithm);
-  void PrintSelf(ostream &os, vtkIndent indent) override;
-  static vtkExtractCells *New();
+  void PrintSelf(ostream& os, vtkIndent indent) override;
+  static vtkExtractCells* New();
   //@}
 
   /**
@@ -54,13 +54,13 @@ public:
    * composed of.  Replaces any other cell ID list supplied so far.  (Set to
    * nullptr to free memory used by cell list.)  The cell ids should be >=0.
    */
-  void SetCellList(vtkIdList *l);
+  void SetCellList(vtkIdList* l);
 
   /**
    * Add the supplied list of cell IDs to those that will be included in the
    * output vtkUnstructuredGrid. The cell ids should be >=0.
    */
-  void AddCellList(vtkIdList *l);
+  void AddCellList(vtkIdList* l);
 
   /**
    * Add this range of cell IDs to those that will be included in the output
@@ -76,25 +76,47 @@ public:
   void AddCellIds(const vtkIdType* ptr, vtkIdType numValues);
   //@}
 
+  //@{
+  /**
+   * If all cells are being extracted, this filter can use fast path to speed up
+   * the extraction. In that case, one can set this flag to true. When set to
+   * true, cell ids added via the various methods are simply ignored.
+   * Defaults to false.
+   */
+  vtkSetMacro(ExtractAllCells, bool);
+  vtkGetMacro(ExtractAllCells, bool);
+  vtkBooleanMacro(ExtractAllCells, bool);
+  //@}
+
+  //@{
+  /**
+   * If the cell ids specified are already sorted and unique, then set this to
+   * true to avoid the filter from doing time-consuming sorts and uniquification
+   * operations. Defaults to false.
+   */
+  vtkSetMacro(AssumeSortedAndUniqueIds, bool);
+  vtkGetMacro(AssumeSortedAndUniqueIds, bool);
+  vtkBooleanMacro(AssumeSortedAndUniqueIds, bool);
+  //@}
 protected:
-  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
-  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation*, vtkInformationVector**, vtkInformationVector*) override;
+  int FillInputPortInformation(int port, vtkInformation* info) override;
 
   vtkExtractCells();
   ~vtkExtractCells() override;
 
-  void Copy(vtkDataSet *input, vtkUnstructuredGrid *output);
-  vtkIdType ReMapPointIds(vtkDataSet *grid);
+  void Copy(vtkDataSet* input, vtkUnstructuredGrid* output);
+  vtkIdType ReMapPointIds(vtkDataSet* grid);
 
-  void CopyCellsDataSet(vtkDataSet *input,
-                        vtkUnstructuredGrid *output);
-  void CopyCellsUnstructuredGrid(vtkDataSet *input,
-                                 vtkUnstructuredGrid *output);
+  void CopyCellsDataSet(vtkDataSet* input, vtkUnstructuredGrid* output);
+  void CopyCellsUnstructuredGrid(vtkDataSet* input, vtkUnstructuredGrid* output);
 
-  vtkExtractCellsSTLCloak *CellList = nullptr;
+  vtkExtractCellsSTLCloak* CellList = nullptr;
   vtkIdType SubSetUGridCellArraySize = 0;
   vtkIdType SubSetUGridFacesArraySize = 0;
   bool InputIsUgrid = false;
+  bool ExtractAllCells = false;
+  bool AssumeSortedAndUniqueIds = false;
 
 private:
   vtkExtractCells(const vtkExtractCells&) = delete;

@@ -1,5 +1,6 @@
 set(classes
   vtkAnnotationLink
+  vtkAppendLocationAttributes
   vtkAppendPoints
   vtkApproximatingSubdivisionFilter
   vtkAreaContourSpectrumFilter
@@ -10,7 +11,6 @@ set(classes
   vtkBooleanOperationPolyDataFilter
   vtkBoxClipDataSet
   vtkBrownianPoints
-  vtkCellCenters
   vtkCellDerivatives
   vtkCellTreeLocator
   vtkCellValidator
@@ -28,6 +28,7 @@ set(classes
   vtkDataSetGradient
   vtkDataSetGradientPrecompute
   vtkDataSetTriangleFilter
+  vtkDateToNumeric
   vtkDeformPointSet
   vtkDensifyPolyData
   vtkDicer
@@ -60,6 +61,7 @@ set(classes
   vtkLoopBooleanPolyDataFilter
   vtkMarchingContourFilter
   vtkMatricizeArray
+  vtkMergeArrays
   vtkMergeCells
   vtkMultiBlockDataGroupFilter
   vtkMultiBlockFromTimeSeriesFilter

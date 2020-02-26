@@ -31,6 +31,9 @@
 #include "vtkMPICommunicator.h"
 #include "vtkMultiProcessController.h"
 
+#include <vtksys/FStream.hxx>
+#include <vtksys/SystemTools.hxx>
+
 namespace vtx
 {
 namespace helper
@@ -187,6 +190,15 @@ types::DataSet XMLInitDataSet(
       {
         dataArray.HasTuples = true;
         dataArray.Persist = true;
+
+        const pugi::xml_attribute xmlOrder = XMLAttribute("Ordering", dataArrayNode, true,
+          "when parsing vertices \"Order\" attribute in ADIOS2 VTK XML schema", false);
+        const std::string order(xmlOrder.value());
+        // XXXX, YYYY, ZZZZ struct of arrays
+        if (order == "SOA")
+        {
+          dataArray.IsSOA = true;
+        }
       }
       else if (specialName == "types")
       {
@@ -249,7 +261,7 @@ types::DataSet XMLInitDataSet(
 
 std::string FileToString(const std::string& fileName)
 {
-  std::ifstream file(fileName);
+  vtksys::ifstream file(fileName.c_str());
   std::stringstream schemaSS;
   schemaSS << file.rdbuf();
   return schemaSS.str();
@@ -270,11 +282,6 @@ std::string SetToCSV(const std::set<std::string>& input) noexcept
   }
   return csv;
 }
-
-// allowed types
-template std::vector<std::size_t> StringToVector<std::size_t>(const std::string&);
-template std::vector<int> StringToVector<int>(const std::string&);
-template std::vector<double> StringToVector<double>(const std::string&);
 
 std::size_t TotalElements(const std::vector<std::size_t>& dimensions) noexcept
 {
@@ -326,6 +333,28 @@ size_t LinearizePoint(const adios2::Dims& shape, const adios2::Dims& point) noex
 vtkSmartPointer<vtkIdTypeArray> NewDataArrayIdType()
 {
   return vtkSmartPointer<vtkIdTypeArray>::New();
+}
+
+std::string GetFileName(const std::string& fileName) noexcept
+{
+  const std::string output =
+    EndsWith(fileName, ".bp.dir") ? fileName.substr(0, fileName.size() - 4) : fileName;
+  return output;
+}
+
+std::string GetEngineType(const std::string& fileName) noexcept
+{
+  const std::string engineType = vtksys::SystemTools::FileIsDirectory(fileName) ? "BP4" : "BP3";
+  return engineType;
+}
+
+bool EndsWith(const std::string& input, const std::string& ends) noexcept
+{
+  if (input.length() >= ends.length())
+  {
+    return (!input.compare(input.length() - ends.length(), ends.length(), ends));
+  }
+  return false;
 }
 
 } // end helper namespace

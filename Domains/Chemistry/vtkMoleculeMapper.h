@@ -155,22 +155,10 @@ public:
   vtkGetMacro(AtomicRadiusType, int);
   vtkSetMacro(AtomicRadiusType, int);
   const char* GetAtomicRadiusTypeAsString();
-  void SetAtomicRadiusTypeToCovalentRadius()
-  {
-    this->SetAtomicRadiusType(CovalentRadius);
-  }
-  void SetAtomicRadiusTypeToVDWRadius()
-  {
-    this->SetAtomicRadiusType(VDWRadius);
-  }
-  void SetAtomicRadiusTypeToUnitRadius()
-  {
-    this->SetAtomicRadiusType(UnitRadius);
-  }
-  void SetAtomicRadiusTypeToCustomArrayRadius()
-  {
-    this->SetAtomicRadiusType(CustomArrayRadius);
-  }
+  void SetAtomicRadiusTypeToCovalentRadius() { this->SetAtomicRadiusType(CovalentRadius); }
+  void SetAtomicRadiusTypeToVDWRadius() { this->SetAtomicRadiusType(VDWRadius); }
+  void SetAtomicRadiusTypeToUnitRadius() { this->SetAtomicRadiusType(UnitRadius); }
+  void SetAtomicRadiusTypeToCustomArrayRadius() { this->SetAtomicRadiusType(CustomArrayRadius); }
   //@}
 
   //@{
@@ -212,14 +200,8 @@ public:
    */
   vtkGetMacro(BondColorMode, int);
   vtkSetClampMacro(BondColorMode, int, SingleColor, DiscreteByAtom);
-  void SetBondColorModeToSingleColor()
-  {
-    this->SetBondColorMode(SingleColor);
-  }
-  void SetBondColorModeToDiscreteByAtom()
-  {
-    this->SetBondColorMode(DiscreteByAtom);
-  }
+  void SetBondColorModeToSingleColor() { this->SetBondColorMode(SingleColor); }
+  void SetBondColorModeToDiscreteByAtom() { this->SetBondColorMode(DiscreteByAtom); }
   const char* GetBondColorModeAsString();
   //@}
 
@@ -234,8 +216,7 @@ public:
    * internal lookup table.
    */
   vtkGetMacro(AtomColorMode, int);
-  vtkSetClampMacro(
-    AtomColorMode, int, SingleColor, DiscreteByAtom);
+  vtkSetClampMacro(AtomColorMode, int, SingleColor, DiscreteByAtom);
   //@}
 
   //@{
@@ -316,6 +297,11 @@ public:
    * true means VTK_COLOR_MODE_MAP_SCALARS, false VTK_COLOR_MODE_DIRECT_SCALARS.
    */
   virtual void SetMapScalars(bool map);
+
+  /**
+   * Accessor to internal structure. This is exposed to make it available for ray tracers.
+   */
+  vtkPeriodicTable* GetPeriodicTable() { return this->PeriodicTable; }
 
 protected:
   vtkMoleculeMapper();

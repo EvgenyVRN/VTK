@@ -49,7 +49,7 @@
  *
  * @sa
  * vtkImporter
-*/
+ */
 
 #ifndef vtkVRMLImporter_h
 #define vtkVRMLImporter_h
@@ -74,7 +74,7 @@ class vtkCellArray;
 class VTKIOIMPORT_EXPORT vtkVRMLImporter : public vtkImporter
 {
 public:
-  static vtkVRMLImporter *New();
+  static vtkVRMLImporter* New();
 
   vtkTypeMacro(vtkVRMLImporter, vtkImporter);
   void PrintSelf(ostream& os, vtkIndent indent) override;
@@ -104,7 +104,12 @@ public:
    * You will have to check and correctly cast the object since
    * this only returns vtkObjects.
    */
-  vtkObject* GetVRMLDEFObject(const char *name);
+  vtkObject* GetVRMLDEFObject(const char* name);
+
+  /**
+   * Get a printable string describing the outputs
+   */
+  std::string GetOutputsDescription() override;
 
 protected:
   vtkVRMLImporter();
@@ -132,10 +137,10 @@ protected:
   /**
    * Return the file pointer to the open file.
    */
-  FILE *GetFileFD() { return this->FileFD; }
+  FILE* GetFileFD() { return this->FileFD; }
 
-  char *FileName;
-  FILE *FileFD;
+  char* FileName;
+  FILE* FileFD;
   int ShapeResolution;
 
   friend class vtkVRMLYaccData;

@@ -1,4 +1,5 @@
 set(classes
+  vtkAdaptiveTemporalInterpolator
   vtkAggregateDataSetFilter
   vtkAngularPeriodicFilter
   vtkCollectGraph
@@ -11,6 +12,7 @@ set(classes
   vtkExtractPolyDataPiece
   vtkExtractUnstructuredGridPiece
   vtkExtractUserDefinedPiece
+  vtkHyperTreeGridGhostCellsGenerator
   vtkIntegrateAttributes
   vtkPCellDataToPointData
   vtkPExtractDataArraysOverTime
@@ -20,6 +22,7 @@ set(classes
   vtkPKdTree
   vtkPLinearExtrusionFilter
   vtkPMaskPoints
+  vtkPMergeArrays
   vtkPOutlineCornerFilter
   vtkPOutlineFilter
   vtkPOutlineFilterInternals
@@ -35,6 +38,7 @@ set(classes
   vtkPieceScalars
   vtkPipelineSize
   vtkProcessIdScalars
+  vtkPTextureMapToSphere
   vtkRectilinearGridOutlineFilter
   vtkRemoveGhosts
   vtkTransmitPolyDataPiece

@@ -10,11 +10,13 @@ vtk_add_test_cxx(vtkRenderingOpenGL2CxxTests tests
   TestCubeMap.cxx
   TestCubeMapRerender.cxx
   TestDepthOfFieldPass.cxx
+  TestDepthPeelingOcclusionQuery.cxx
   TestDepthPeelingPass.cxx
   TestDepthPeelingPassViewport.cxx
   TestEDLPass.cxx
-  TestEquirectangularToCubemap.cxx
+  TestEquirectangularToCubeMap.cxx
   TestFloor.cxx
+  TestFluidMapper.cxx
   TestFramebufferPass.cxx
   TestFramebufferHDR.cxx
   TestFXAAFilter.cxx
@@ -55,12 +57,11 @@ vtk_add_test_cxx(vtkRenderingOpenGL2CxxTests tests
   TestTexture16Bits.cxx,NO_DATA
   TestTexture32Bits.cxx,NO_DATA
   TestToneMappingPass.cxx,NO_DATA
+  TestSurfaceInterpolationSwitch.cxx
   TestUserShader.cxx
   TestUserShader2.cxx
   TestVBOPLYMapper.cxx
   TestVBOPointsLines.cxx
-  TestValuePass.cxx
-  TestValuePass2.cxx
   TestCubeMap2.cxx
   UnitTestOpenGLUniforms.cxx,NO_DATA,NO_VALID,NO_OUTPUT
   )
