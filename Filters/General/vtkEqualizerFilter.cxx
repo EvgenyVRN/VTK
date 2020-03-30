@@ -44,7 +44,7 @@ public:
     if (it == this->Spectrums.end())
     {
       const vtkIdType tuplesCount = array->GetNumberOfTuples();
-      double values[tuplesCount];
+      double *values = new double[tuplesCount];
       for (vtkIdType tupleId = 0; tupleId < tuplesCount; ++tupleId)
         values[tupleId] = array->GetTuple1(tupleId);
 
@@ -58,6 +58,7 @@ public:
         std::vector<ComplexNumber>(spectrum, spectrum + spectrumSize);
 
       delete[] spectrum;
+      delete[] values;
     }
 
     return this->Spectrums.at(array->GetName());
